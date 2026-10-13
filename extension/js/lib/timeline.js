@@ -151,7 +151,19 @@ function buildPieces(keepFrames, shotsFrames) {
   return pieces;
 }
 
+/**
+ * Sekansın ses kliplerinin özeti: analizden sonra zaman çizelgesi değiştiyse
+ * kesimlerin yanlış yere uygulanmasını önlemek için karşılaştırılır.
+ */
+function sequenceFingerprint(seq) {
+  var r = function (x) { return Math.round((x || 0) * 100); };
+  return JSON.stringify([Math.round(seq.duration * 100), seq.audioTracks.map(function (t) {
+    return t.clips.map(function (c) { return [c.path, r(c.start), r(c.end), r(c.inPoint)]; });
+  })]);
+}
+
 module.exports = {
+  sequenceFingerprint: sequenceFingerprint,
   mergeRanges: mergeRanges,
   invertRanges: invertRanges,
   secondsToFrames: secondsToFrames,

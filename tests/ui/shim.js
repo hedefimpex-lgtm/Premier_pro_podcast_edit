@@ -97,6 +97,7 @@
       { index: 2, name: 'Müzik', muted: true, clips: [] }
     ]
   };
+  window.__PK_SEQ__ = SEQ;
   var PK = {
     ping: function () { return { ok: true, version: '1.0.0', app: '25.5.0' }; },
     getSequenceInfo: function () { return { ok: true, sequence: SEQ }; },

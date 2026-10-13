@@ -135,8 +135,8 @@ var PK = (function () {
         return ok({ version: VERSION, app: app.version, build: app.build });
     }
 
-    function getSequenceInfo() {
-        var seq = app.project.activeSequence;
+    function getSequenceInfo(seqId) {
+        var seq = seqOrActive(seqId);
         if (!seq) { return fail('NO_SEQUENCE', 'Aktif sekans yok'); }
         var timebase = Number(seq.timebase);
         var fps = timebase > 0 ? TICKS / timebase : 30;

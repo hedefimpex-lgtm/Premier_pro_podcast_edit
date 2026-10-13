@@ -152,6 +152,13 @@ const shim = fs.readFileSync(path.join(__dirname, 'shim.js'), 'utf8');
   await page.click('[data-tab="main"]');
   await page.screenshot({ path: path.join(OUT, '09-son.png'), fullPage: true });
 
+  // Analizden sonra sekans değişirse uygulama reddedilmeli
+  await page.evaluate(() => { window.__PK_IMPORTED_XML__ = null; window.__PK_SEQ__.audioTracks[0].clips[0].start = 1.5; });
+  await page.click('#btnApply');
+  await page.waitForFunction(() => document.querySelector('#log').textContent.includes('analizden sonra değiştirilmiş'));
+  assert.strictEqual(await page.evaluate(() => window.__PK_IMPORTED_XML__), null);
+  await page.evaluate(() => { window.__PK_SEQ__.audioTracks[0].clips[0].start = 0; });
+
   for (const [tab, file] of [['silence', '04-bosluk'], ['fillers', '06-takilma'], ['subs', '07-altyazi'], ['setup', '08-ayarlar']]) {
     await page.click(`[data-tab="${tab}"]`);
     await page.screenshot({ path: path.join(OUT, file + '.png'), fullPage: true });

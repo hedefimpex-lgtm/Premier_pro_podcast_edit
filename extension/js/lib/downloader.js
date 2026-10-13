@@ -48,48 +48,58 @@ function download(url, dest, onProgress, cancel, redirects) {
   redirects = redirects || 0;
   return new Promise(function (resolve, reject) {
     if (redirects > 8) { reject(new Error('Çok fazla yönlendirme')); return; }
+    var settled = false;
+    var tmp = dest + '.part';
+    function fail(err) {
+      if (settled) return;
+      settled = true;
+      safeUnlink(tmp);
+      reject(err);
+    }
     var lib = url.indexOf('https:') === 0 ? https : http;
     var req = lib.get(url, { headers: { 'User-Agent': 'PodcastKurgu/1.0' } }, function (res) {
       if ([301, 302, 303, 307, 308].indexOf(res.statusCode) >= 0 && res.headers.location) {
         res.resume();
+        settled = true;
         var next = new URL(res.headers.location, url).href;
         download(next, dest, onProgress, cancel, redirects + 1).then(resolve, reject);
         return;
       }
       if (res.statusCode !== 200) {
         res.resume();
-        reject(new Error('İndirme başarısız (HTTP ' + res.statusCode + '): ' + url));
+        fail(new Error('İndirme başarısız (HTTP ' + res.statusCode + '): ' + url));
         return;
       }
       var total = parseInt(res.headers['content-length'] || '0', 10);
       var got = 0;
-      var tmp = dest + '.part';
       var file = fs.createWriteStream(tmp);
       res.on('data', function (chunk) {
         got += chunk.length;
         if (onProgress) onProgress(got, total);
         if (cancel && cancel.cancelled) {
-          req.abort();
-          file.close();
+          file.destroy();
+          req.destroy(new Error('İptal edildi'));
         }
       });
-      res.pipe(file);
+      res.on('aborted', function () { fail(new Error(cancel && cancel.cancelled ? 'İptal edildi' : 'Bağlantı kesildi')); });
+      res.on('error', fail);
+      file.on('error', fail);
       file.on('finish', function () {
-        file.close(function () {
-          if (cancel && cancel.cancelled) { safeUnlink(tmp); reject(new Error('İptal edildi')); return; }
-          if (total && got < total) { safeUnlink(tmp); reject(new Error('İndirme yarıda kaldı')); return; }
-          try {
-            safeUnlink(dest);
-            fs.renameSync(tmp, dest);
-            resolve(dest);
-          } catch (e) { reject(e); }
-        });
+        if (settled) return;
+        if (total && got < total) { fail(new Error('İndirme yarıda kaldı')); return; }
+        try {
+          safeUnlink(dest);
+          fs.renameSync(tmp, dest);
+          settled = true;
+          resolve(dest);
+        } catch (e) { fail(e); }
       });
-      file.on('error', function (e) { safeUnlink(tmp); reject(e); });
-      res.on('error', function (e) { safeUnlink(tmp); reject(e); });
+      res.pipe(file);
     });
-    req.on('error', function (e) { reject(new Error('Bağlantı hatası: ' + e.message)); });
-    req.setTimeout(60000, function () { req.abort(); });
+    req.on('error', function (e) {
+      fail(cancel && cancel.cancelled ? new Error('İptal edildi') : new Error('Bağlantı hatası: ' + e.message));
+    });
+    req.setTimeout(60000, function () { req.destroy(new Error('zaman aşımı')); });
   });
 }
 

@@ -451,6 +451,7 @@
         onProgress: setProgress,
         cancel: S.cancel
       });
+      analysis.fingerprint = timeline.sequenceFingerprint(seq);
       analysis.trackKey = trackKey();
       analysis.whisperKey = whisperKey();
       S.analysis = analysis;
@@ -693,6 +694,12 @@
     var a = S.analysis, p = S.plan, s = S.settings;
     setBusy(true);
     try {
+      // Analizden sonra zaman çizelgesi değiştiyse kesimler yanlış yere düşer: önce doğrula
+      var now = (await PKHost.call('getSequenceInfo', a.sequenceId)).sequence;
+      if (now.id !== a.sequenceId || timeline.sequenceFingerprint(now) !== a.fingerprint) {
+        log('Sekans analizden sonra değiştirilmiş (ya da bulunamadı). Lütfen yeniden analiz edin.', 'err');
+        return;
+      }
       var base = paths.safeName(a.sequenceName) + '-' + stamp();
       if (s.output.mode === 'markers') {
         await applyMarkers();
