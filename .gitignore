@@ -1,0 +1,7 @@
+node_modules/
+installer/Output/
+*.zip
+*.log
+.DS_Store
+Thumbs.db
+tests/ui/shots/

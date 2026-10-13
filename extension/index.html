@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>Podcast Kurgu Asistanı</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"></span>
+      <div>
+        <div class="title">Podcast Kurgu</div>
+        <div class="seq" id="seqLabel">Sekans seçilmedi</div>
+      </div>
+    </div>
+    <button class="icon-btn" id="btnRefresh" title="Aktif sekansı yeniden oku">⟳</button>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="main" class="active">Kurgu</button>
+    <button data-tab="silence">Boşluk</button>
+    <button data-tab="fillers">Takılma</button>
+    <button data-tab="subs">Altyazı</button>
+    <button data-tab="cams">Kamera</button>
+    <button data-tab="setup">Ayarlar</button>
+  </nav>
+
+  <main>
+    <!-- ================= KURGU ================= -->
+    <section class="tab active" id="tab-main">
+      <div class="card">
+        <div class="card-h">
+          <span>Ses kanalları</span>
+          <small id="seqMeta"></small>
+        </div>
+        <div id="trackList" class="track-list"><p class="muted">Premiere Pro'da bir sekans açın ve ⟳ düğmesine basın.</p></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><span>Görevler</span>
+          <select id="presetSelect" title="Hazır ayar">
+            <option value="">Hazır ayar…</option>
+          </select>
+        </div>
+        <label class="check"><input type="checkbox" data-k="tasks.silence"> Konuşma boşluklarını kes</label>
+        <label class="check"><input type="checkbox" data-k="tasks.fillers"> Takılmaları kes <span class="muted">(ıı, mmm, eee, hmm)</span></label>
+        <label class="check"><input type="checkbox" data-k="tasks.multicam"> Çoklu kamera kurgusu</label>
+        <label class="check"><input type="checkbox" data-k="tasks.subtitles"> Altyazı ekle</label>
+        <div class="row gap">
+          <button class="primary grow" id="btnAnalyze">1 · Analiz et</button>
+          <button class="ghost hidden" id="btnCancel">İptal</button>
+        </div>
+        <div class="progress hidden" id="progressWrap">
+          <div class="bar"><div id="progressBar"></div></div>
+          <div class="status" id="progressText"></div>
+        </div>
+        <div id="needReanalyze" class="note warn hidden">Bu ayar için yeniden analiz gerekiyor.</div>
+      </div>
+
+      <div class="card hidden" id="resultCard">
+        <div class="card-h"><span>Sonuç</span><small id="thresholdInfo"></small></div>
+        <div class="stats">
+          <div class="stat"><b id="stOrig">–</b><span>Orijinal</span></div>
+          <div class="stat"><b id="stNew">–</b><span>Yeni süre</span></div>
+          <div class="stat accent"><b id="stSaved">–</b><span>Kazanç</span></div>
+        </div>
+        <div class="chips" id="chips"></div>
+        <canvas id="overview" height="74" title="Tıklayarak oynatma kafasını taşıyın"></canvas>
+        <div class="legend">
+          <span><i class="sw sil"></i>Boşluk</span><span><i class="sw fil"></i>Takılma</span><span><i class="sw off"></i>Kapalı</span><span id="camLegend"></span>
+        </div>
+        <div class="row list-tools">
+          <select id="rowFilter">
+            <option value="all">Tümü</option>
+            <option value="silence">Boşluklar</option>
+            <option value="filler">Takılmalar</option>
+            <option value="off">Kapatılanlar</option>
+          </select>
+          <button class="ghost small" id="btnAllOn">Tümünü aç</button>
+          <button class="ghost small" id="btnAllOff">Tümünü kapat</button>
+        </div>
+        <div class="rows" id="rows"></div>
+      </div>
+
+      <div class="card hidden" id="applyCard">
+        <div class="card-h"><span>Uygula</span></div>
+        <label class="radio"><input type="radio" name="outMode" value="sequence" data-k="output.mode"> Yeni sekans oluştur <span class="muted">(orijinal korunur)</span></label>
+        <label class="radio"><input type="radio" name="outMode" value="markers" data-k="output.mode"> Yalnızca işaretçi ekle <span class="muted">(kesmeden incele)</span></label>
+        <button class="primary block" id="btnApply">2 · Premiere'e uygula</button>
+        <div class="row gap wrap">
+          <button class="ghost small" id="btnSaveSrt">SRT kaydet…</button>
+          <button class="ghost small" id="btnSaveTxt">Transkript kaydet…</button>
+          <button class="ghost small" id="btnClearMarkers">İşaretçileri temizle</button>
+        </div>
+      </div>
+
+      <div id="log" class="log"></div>
+    </section>
+
+    <!-- ================= BOŞLUK ================= -->
+    <section class="tab" id="tab-silence">
+      <div class="card">
+        <div class="card-h"><span>Sessizlik eşiği</span><small id="levelInfo"></small></div>
+        <label class="check"><input type="checkbox" data-k="silence.autoThreshold"> Otomatik eşik (önerilen)</label>
+        <div class="field" data-show="silence.autoThreshold">
+          <label>Hassasiyet <span class="val" data-v="silence.sensitivity" data-fmt="pct"></span></label>
+          <input type="range" min="0.1" max="0.8" step="0.01" data-k="silence.sensitivity">
+          <p class="hint">Yükseltirseniz daha fazla bölüm "sessiz" sayılır (alçak sesle konuşmalar kesilebilir).</p>
+        </div>
+        <div class="field" data-hide="silence.autoThreshold">
+          <label>Eşik <span class="val" data-v="silence.thresholdDb" data-fmt="db"></span></label>
+          <input type="range" min="-70" max="-15" step="1" data-k="silence.thresholdDb">
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span>Kesim kuralları</span></div>
+        <div class="field">
+          <label>En kısa boşluk <span class="val" data-v="silence.minSilenceMs" data-fmt="ms"></span></label>
+          <input type="range" min="150" max="3000" step="10" data-k="silence.minSilenceMs">
+          <p class="hint">Bundan kısa sessizlikler doğal duraklama sayılır ve kesilmez.</p>
+        </div>
+        <div class="field">
+          <label>Konuşma bitince bırakılan pay <span class="val" data-v="silence.keepAfterMs" data-fmt="ms"></span></label>
+          <input type="range" min="0" max="800" step="5" data-k="silence.keepAfterMs">
+        </div>
+        <div class="field">
+          <label>Konuşma başlamadan önce bırakılan pay <span class="val" data-v="silence.keepBeforeMs" data-fmt="ms"></span></label>
+          <input type="range" min="0" max="800" step="5" data-k="silence.keepBeforeMs">
+          <p class="hint">İki pay toplamı kesimden sonra kalan duraklamadır. Çok düşük değerler kelime başlarını kırpabilir.</p>
+        </div>
+        <div class="field">
+          <label>En kısa kesim <span class="val" data-v="silence.minCutMs" data-fmt="ms"></span></label>
+          <input type="range" min="0" max="1000" step="10" data-k="silence.minCutMs">
+        </div>
+        <div class="field">
+          <label>Kısa ses patlamalarını yok say <span class="val" data-v="silence.minSpeechMs" data-fmt="ms"></span></label>
+          <input type="range" min="0" max="400" step="10" data-k="silence.minSpeechMs">
+          <p class="hint">Tık, masaya vurma gibi bundan kısa sesler konuşma sayılmaz.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span>Nefesler</span></div>
+        <label class="check"><input type="checkbox" data-k="silence.removeBreaths"> Nefes seslerini de boşluk say</label>
+        <div class="field" data-show="silence.removeBreaths">
+          <label>Nefes üst sınırı (eşiğin üstü) <span class="val" data-v="silence.breathMaxDb" data-fmt="db"></span></label>
+          <input type="range" min="3" max="25" step="1" data-k="silence.breathMaxDb">
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAKILMA ================= -->
+    <section class="tab" id="tab-fillers">
+      <div class="card">
+        <div class="card-h"><span>Tespit yöntemi</span></div>
+        <select data-k="fillers.method" class="block">
+          <option value="auto">Otomatik (yapay zeka varsa onu kullan)</option>
+          <option value="ai">Yapay zeka (Whisper) — kelime tanıma</option>
+          <option value="acoustic">Akustik — uzayan ünlüleri bul (hızlı, çevrimdışı)</option>
+          <option value="both">İkisi birlikte (en kapsamlı)</option>
+        </select>
+        <p class="hint">Yapay zeka "ııı", "hmm", "eee" gibi sesleri kelime olarak bulur. Akustik yöntem, sabit perdeli uzun sesleri (ıııı, mmmm) bulur; model gerektirmez.</p>
+      </div>
+      <div class="card">
+        <div class="card-h"><span>Takılma kelimeleri</span></div>
+        <textarea rows="3" data-k="fillers.words" spellcheck="false"></textarea>
+        <p class="hint">Virgülle ayırın. Harf tekrarları önemsizdir: "ıı" yazmak "ıııııı"yı da yakalar. "şey", "yani" gibi kelimeleri eklemek isterseniz dikkatli olun — gerçek kelime olarak da kullanılırlar.</p>
+        <div class="field">
+          <label>Kelimeye bitişik takılmada pay <span class="val" data-v="fillers.edgePadMs" data-fmt="ms"></span></label>
+          <input type="range" min="0" max="150" step="5" data-k="fillers.edgePadMs">
+        </div>
+        <div class="field">
+          <label>En kısa takılma <span class="val" data-v="fillers.minMs" data-fmt="ms"></span></label>
+          <input type="range" min="0" max="600" step="10" data-k="fillers.minMs">
+        </div>
+        <div class="field">
+          <label>En uzun takılma <span class="val" data-v="fillers.maxMs" data-fmt="ms"></span></label>
+          <input type="range" min="500" max="6000" step="100" data-k="fillers.maxMs">
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span>Akustik yöntem</span></div>
+        <div class="field">
+          <label>Hassasiyet <span class="val" data-v="fillers.acousticSensitivity" data-fmt="pct"></span></label>
+          <input type="range" min="0" max="1" step="0.05" data-k="fillers.acousticSensitivity">
+        </div>
+        <div class="field">
+          <label>En kısa uzatma <span class="val" data-v="fillers.acousticMinMs" data-fmt="ms"></span></label>
+          <input type="range" min="200" max="1500" step="10" data-k="fillers.acousticMinMs">
+        </div>
+        <label class="check"><input type="checkbox" data-k="fillers.acousticIsolatedOnly"> Yalnızca araya giren takılmalar <span class="muted">(güvenli)</span></label>
+        <p class="hint">Kapatılırsa kelime sonundaki uzatmalar da ("veee") yakalanır; kelime kırpılabilir.</p>
+      </div>
+      <div class="card">
+        <div class="card-h"><span>Whisper ipucu metni</span></div>
+        <textarea rows="2" data-k="whisper.prompt" spellcheck="false"></textarea>
+        <p class="hint">Whisper normalde takılmaları yazmaz; bu metin onu takılmaları da yazıya dökmeye yönlendirir. Değiştirirseniz yeniden analiz gerekir.</p>
+      </div>
+    </section>
+
+    <!-- ================= ALTYAZI ================= -->
+    <section class="tab" id="tab-subs">
+      <div class="card">
+        <div class="card-h"><span>Satır düzeni</span></div>
+        <div class="grid2">
+          <div class="field"><label>Satır başına karakter <span class="val" data-v="subtitles.maxChars"></span></label>
+            <input type="range" min="12" max="80" step="1" data-k="subtitles.maxChars"></div>
+          <div class="field"><label>Satır sayısı <span class="val" data-v="subtitles.maxLines"></span></label>
+            <input type="range" min="1" max="3" step="1" data-k="subtitles.maxLines"></div>
+        </div>
+        <div class="field"><label>En fazla kelime <span class="val" data-v="subtitles.maxWords" data-fmt="words"></span></label>
+          <input type="range" min="0" max="12" step="1" data-k="subtitles.maxWords">
+          <p class="hint">Reels/Shorts tarzı için 1–3 kelime deneyin.</p></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span>Zamanlama</span></div>
+        <div class="field"><label>En kısa süre <span class="val" data-v="subtitles.minDurationMs" data-fmt="ms"></span></label>
+          <input type="range" min="300" max="3000" step="50" data-k="subtitles.minDurationMs"></div>
+        <div class="field"><label>En uzun süre <span class="val" data-v="subtitles.maxDurationMs" data-fmt="ms"></span></label>
+          <input type="range" min="1500" max="12000" step="100" data-k="subtitles.maxDurationMs"></div>
+        <div class="field"><label>Bu boşlukta yeni altyazı başlat <span class="val" data-v="subtitles.maxGapMs" data-fmt="ms"></span></label>
+          <input type="range" min="200" max="3000" step="50" data-k="subtitles.maxGapMs"></div>
+        <div class="field"><label>Altyazılar arası en az boşluk <span class="val" data-v="subtitles.minGapMs" data-fmt="ms"></span></label>
+          <input type="range" min="0" max="500" step="10" data-k="subtitles.minGapMs"></div>
+        <div class="field"><label>Zaman kaydırma <span class="val" data-v="subtitles.offsetMs" data-fmt="ms"></span></label>
+          <input type="range" min="-1000" max="1000" step="10" data-k="subtitles.offsetMs"></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span>Metin</span></div>
+        <label class="check"><input type="checkbox" data-k="subtitles.removeFillers"> Takılmaları altyazıdan çıkar</label>
+        <label class="check"><input type="checkbox" data-k="subtitles.uppercase"> TÜMÜ BÜYÜK HARF</label>
+        <label class="check"><input type="checkbox" data-k="subtitles.removePunctuation"> Nokta ve virgülleri kaldır</label>
+      </div>
+      <div class="card">
+        <div class="card-h"><span>Önizleme</span><small id="subCount"></small></div>
+        <div id="subPreview" class="sub-preview"><p class="muted">Analizden sonra burada görünür.</p></div>
+      </div>
+    </section>
+
+    <!-- ================= KAMERA ================= -->
+    <section class="tab" id="tab-cams">
+      <div class="card">
+        <div class="card-h"><span>Konuşmacı → Kamera</span></div>
+        <p class="hint">Her kameranın görüntüsünü ayrı bir video kanalına (V1, V2, V3…) senkron yerleştirin; her konuşmacının mikrofonu ayrı ses kanalında olmalı.</p>
+        <div id="camMap" class="cam-map"><p class="muted">Önce sekansı okuyun.</p></div>
+        <div class="field">
+          <label>Geniş açı (herkes)</label>
+          <select id="wideSelect" data-k="multicam.wideTrack" data-num="1" class="block"></select>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span>Geçiş kuralları</span></div>
+        <div class="field"><label>Baskınlık farkı <span class="val" data-v="multicam.marginDb" data-fmt="db"></span></label>
+          <input type="range" min="1" max="20" step="0.5" data-k="multicam.marginDb">
+          <p class="hint">Bir konuşmacının kameraya geçmesi için diğerlerinden bu kadar yüksek olması gerekir; altında kalırsa iki kişi aynı anda konuşuyor sayılır.</p></div>
+        <div class="field"><label>Kısa araya girmeleri yok say <span class="val" data-v="multicam.holdMs" data-fmt="ms"></span></label>
+          <input type="range" min="0" max="3000" step="50" data-k="multicam.holdMs"></div>
+        <div class="field"><label>En kısa çekim <span class="val" data-v="multicam.minShotMs" data-fmt="ms"></span></label>
+          <input type="range" min="500" max="10000" step="100" data-k="multicam.minShotMs"></div>
+        <div class="field"><label>Önden geçiş <span class="val" data-v="multicam.anticipateMs" data-fmt="ms"></span></label>
+          <input type="range" min="0" max="1000" step="10" data-k="multicam.anticipateMs">
+          <p class="hint">Kamera, konuşma başlamadan bu kadar önce değişir (daha doğal his).</p></div>
+        <div class="field"><label>Yumuşatma <span class="val" data-v="multicam.smoothMs" data-fmt="ms"></span></label>
+          <input type="range" min="50" max="1500" step="10" data-k="multicam.smoothMs"></div>
+        <label class="check"><input type="checkbox" data-k="multicam.overlapToWide"> Aynı anda konuşulunca geniş açıya geç</label>
+        <label class="check"><input type="checkbox" data-k="multicam.autoGain"> Mikrofon seviyelerini otomatik eşitle</label>
+      </div>
+      <div class="card">
+        <div class="card-h"><span>Uzun çekimler</span></div>
+        <div class="field"><label>Ara plan için en uzun çekim <span class="val" data-v="multicam.maxShotMs" data-fmt="msOff"></span></label>
+          <input type="range" min="0" max="60000" step="1000" data-k="multicam.maxShotMs"></div>
+        <div class="field"><label>Ara plan süresi <span class="val" data-v="multicam.cutawayMs" data-fmt="ms"></span></label>
+          <input type="range" min="1000" max="8000" step="100" data-k="multicam.cutawayMs"></div>
+        <div class="field"><label>Ara plan kamerası</label>
+          <select data-k="multicam.cutawayTarget" class="block">
+            <option value="wide">Geniş açı</option>
+            <option value="listener">Dinleyen kişi (tepki çekimi)</option>
+          </select></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span>Pasif kameralar</span></div>
+        <select data-k="multicam.inactiveMode" class="block">
+          <option value="disable">Devre dışı bırak (sonradan kolayca değiştirilebilir)</option>
+          <option value="remove">Sil (temiz zaman çizelgesi)</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- ================= AYARLAR ================= -->
+    <section class="tab" id="tab-setup">
+      <div class="card">
+        <div class="card-h"><span>Bileşenler</span><button class="ghost small" id="btnRecheck">Yeniden tara</button></div>
+        <div class="comp" id="compFfmpeg"></div>
+        <div class="comp" id="compWhisper"></div>
+        <div class="progress hidden" id="dlWrap">
+          <div class="bar"><div id="dlBar"></div></div>
+          <div class="status" id="dlText"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span>Yapay zeka modeli</span></div>
+        <div id="modelList" class="model-list"></div>
+        <div class="grid2">
+          <div class="field"><label>Dil</label>
+            <select data-k="whisper.language" class="block">
+              <option value="tr">Türkçe</option>
+              <option value="en">İngilizce</option>
+              <option value="de">Almanca</option>
+              <option value="ar">Arapça</option>
+              <option value="auto">Otomatik algıla</option>
+            </select></div>
+          <div class="field"><label>İş parçacığı <span class="val" data-v="whisper.threads" data-fmt="auto"></span></label>
+            <input type="range" min="0" max="32" step="1" data-k="whisper.threads"></div>
+        </div>
+        <div class="field"><label>Ek Whisper parametreleri</label>
+          <input type="text" data-k="whisper.extraArgs" placeholder="örn. --beam-size 5" spellcheck="false"></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span>Özel yollar</span></div>
+        <div class="field"><label>ffmpeg.exe</label>
+          <div class="row gap"><input type="text" class="grow" data-k="paths.ffmpeg" placeholder="otomatik" spellcheck="false"><button class="ghost small" data-browse="paths.ffmpeg">…</button></div></div>
+        <div class="field"><label>whisper-cli.exe <span class="muted">(GPU/CUDA sürümü için)</span></label>
+          <div class="row gap"><input type="text" class="grow" data-k="paths.whisper" placeholder="otomatik" spellcheck="false"><button class="ghost small" data-browse="paths.whisper">…</button></div></div>
+        <div class="field"><label>Yeni sekans adı eki</label>
+          <input type="text" data-k="output.suffix"></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span>Bakım</span></div>
+        <div class="row gap wrap">
+          <button class="ghost small" id="btnOpenTools">Araç klasörünü aç</button>
+          <button class="ghost small" id="btnClearCache">Önbelleği temizle</button>
+          <button class="ghost small" id="btnReset">Ayarları sıfırla</button>
+        </div>
+        <p class="hint" id="toolsPath"></p>
+        <p class="hint" id="versionInfo"></p>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/cep.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xmeml>
+<xmeml version="4">
+	<sequence id="sequence-1" TL.SQAudioVisibleBase="0">
+		<uuid>0d3f6f3e-1111-2222-3333-444455556666</uuid>
+		<duration>900</duration>
+		<rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate>
+		<name>Podcast Bölüm 1</name>
+		<media>
+			<video>
+				<format><samplecharacteristics><rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate><width>1920</width><height>1080</height></samplecharacteristics></format>
+				<track TL.SQTrackShy="0">
+					<clipitem id="clipitem-1">
+						<masterclipid>master-file-1</masterclipid>
+						<name>genis.mp4</name>
+						<enabled>TRUE</enabled>
+						<duration>108000</duration>
+						<rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate>
+						<start>0</start>
+						<end>450</end>
+						<in>0</in>
+						<out>450</out>
+						<pproTicksIn>0</pproTicksIn>
+						<pproTicksOut>3814050240000</pproTicksOut>
+						<file id="file-1">
+							<name>genis.mp4</name>
+							<pathurl>file://localhost/C%3a/Podcast/genis.mp4</pathurl>
+							<rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate>
+							<duration>108000</duration>
+							<media><video><samplecharacteristics><rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate><width>1920</width><height>1080</height></samplecharacteristics></video><audio><channelcount>2</channelcount></audio></media>
+						</file>
+						
+					</clipitem>
+					<transitionitem>
+						<start>440</start><end>460</end><alignment>center</alignment>
+						<effect><name>Cross Dissolve</name><effectid>Cross Dissolve</effectid><effecttype>transition</effecttype><mediatype>video</mediatype></effect>
+					</transitionitem>
+					<clipitem id="clipitem-6">
+						<masterclipid>master-file-1</masterclipid>
+						<name>genis.mp4</name>
+						<enabled>TRUE</enabled>
+						<duration>108000</duration>
+						<rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate>
+						<start>450</start>
+						<end>900</end>
+						<in>600</in>
+						<out>1050</out>
+						<pproTicksIn>5085400320000</pproTicksIn>
+						<pproTicksOut>8899450560000</pproTicksOut>
+						<file id="file-1"/>
+						
+					</clipitem>
+					<enabled>TRUE</enabled>
+					<locked>FALSE</locked>
+				</track>
+				<track TL.SQTrackShy="0">
+					<clipitem id="clipitem-2">
+						<masterclipid>master-file-2</masterclipid>
+						<name>kameraA.mp4</name>
+						<enabled>TRUE</enabled>
+						<duration>108000</duration>
+						<rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate>
+						<start>0</start>
+						<end>900</end>
+						<in>100</in>
+						<out>1000</out>
+						<pproTicksIn>847566720000</pproTicksIn>
+						<pproTicksOut>8475667200000</pproTicksOut>
+						<file id="file-2">
+							<name>kameraA.mp4</name>
+							<pathurl>file://localhost/C%3a/Podcast/kameraA.mp4</pathurl>
+							<rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate>
+							<duration>108000</duration>
+							<media><video><samplecharacteristics><rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate><width>1920</width><height>1080</height></samplecharacteristics></video><audio><channelcount>2</channelcount></audio></media>
+						</file>
+						
+						<link>
+							<linkclipref>clipitem-2</linkclipref>
+							<mediatype>video</mediatype>
+							<trackindex>2</trackindex>
+							<clipindex>1</clipindex>
+						</link>
+						<link>
+							<linkclipref>clipitem-4</linkclipref>
+							<mediatype>audio</mediatype>
+							<trackindex>1</trackindex>
+							<clipindex>1</clipindex>
+						</link>
+					</clipitem>
+					<enabled>TRUE</enabled>
+					<locked>FALSE</locked>
+				</track>
+				<track TL.SQTrackShy="0">
+					<clipitem id="clipitem-3">
+						<masterclipid>master-file-3</masterclipid>
+						<name>kameraB.mp4</name>
+						<enabled>TRUE</enabled>
+						<duration>108000</duration>
+						<rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate>
+						<start>0</start>
+						<end>900</end>
+						<in>200</in>
+						<out>1100</out>
+						<pproTicksIn>1695133440000</pproTicksIn>
+						<pproTicksOut>9323233920000</pproTicksOut>
+						<file id="file-3">
+							<name>kameraB.mp4</name>
+							<pathurl>file://localhost/C%3a/Podcast/kameraB.mp4</pathurl>
+							<rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate>
+							<duration>108000</duration>
+							<media><video><samplecharacteristics><rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate><width>1920</width><height>1080</height></samplecharacteristics></video><audio><channelcount>2</channelcount></audio></media>
+						</file>
+						
+						<link>
+							<linkclipref>clipitem-3</linkclipref>
+							<mediatype>video</mediatype>
+							<trackindex>3</trackindex>
+							<clipindex>1</clipindex>
+						</link>
+						<link>
+							<linkclipref>clipitem-5</linkclipref>
+							<mediatype>audio</mediatype>
+							<trackindex>2</trackindex>
+							<clipindex>1</clipindex>
+						</link>
+					</clipitem>
+					<enabled>TRUE</enabled>
+					<locked>FALSE</locked>
+				</track>
+			</video>
+			<audio>
+				<numOutputChannels>2</numOutputChannels>
+				<track TL.SQTrackShy="0" premiereTrackType="Stereo">
+					<clipitem id="clipitem-4">
+						<masterclipid>master-file-2</masterclipid>
+						<name>kameraA.mp4</name>
+						<enabled>TRUE</enabled>
+						<duration>108000</duration>
+						<rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate>
+						<start>0</start>
+						<end>900</end>
+						<in>100</in>
+						<out>1000</out>
+						<pproTicksIn>847566720000</pproTicksIn>
+						<pproTicksOut>8475667200000</pproTicksOut>
+						<file id="file-2"/>
+						<sourcetrack><mediatype>audio</mediatype><trackindex>1</trackindex></sourcetrack><filter><effect><name>Audio Levels</name><effectid>audiolevels</effectid><effecttype>filter</effecttype><mediatype>audio</mediatype><parameter><parameterid>level</parameterid><value>1.2</value></parameter></effect></filter>
+						<link>
+							<linkclipref>clipitem-2</linkclipref>
+							<mediatype>video</mediatype>
+							<trackindex>2</trackindex>
+							<clipindex>1</clipindex>
+						</link>
+						<link>
+							<linkclipref>clipitem-4</linkclipref>
+							<mediatype>audio</mediatype>
+							<trackindex>1</trackindex>
+							<clipindex>1</clipindex>
+						</link>
+					</clipitem>
+					<enabled>TRUE</enabled>
+					<locked>FALSE</locked>
+				</track>
+				<track TL.SQTrackShy="0" premiereTrackType="Stereo">
+					<clipitem id="clipitem-5">
+						<masterclipid>master-file-3</masterclipid>
+						<name>kameraB.mp4</name>
+						<enabled>TRUE</enabled>
+						<duration>108000</duration>
+						<rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate>
+						<start>0</start>
+						<end>900</end>
+						<in>200</in>
+						<out>1100</out>
+						<pproTicksIn>1695133440000</pproTicksIn>
+						<pproTicksOut>9323233920000</pproTicksOut>
+						<file id="file-3"/>
+						<sourcetrack><mediatype>audio</mediatype><trackindex>1</trackindex></sourcetrack><filter><effect><name>Audio Levels</name><effectid>audiolevels</effectid><effecttype>filter</effecttype><mediatype>audio</mediatype><parameter><parameterid>level</parameterid><value>1.2</value></parameter></effect></filter>
+						<link>
+							<linkclipref>clipitem-3</linkclipref>
+							<mediatype>video</mediatype>
+							<trackindex>3</trackindex>
+							<clipindex>1</clipindex>
+						</link>
+						<link>
+							<linkclipref>clipitem-5</linkclipref>
+							<mediatype>audio</mediatype>
+							<trackindex>2</trackindex>
+							<clipindex>1</clipindex>
+						</link>
+					</clipitem>
+					<enabled>TRUE</enabled>
+					<locked>FALSE</locked>
+				</track>
+			</audio>
+		</media>
+		<timecode><rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate><string>00;00;00;00</string><frame>0</frame><displayformat>DF</displayformat></timecode>
+		<marker><comment>Önemli an</comment><name>İşaret</name><in>300</in><out>-1</out></marker>
+		<marker><comment>Kesilecek</comment><name>Sil</name><in>105</in><out>-1</out></marker>
+	</sequence>
+</xmeml>
